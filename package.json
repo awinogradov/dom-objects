@@ -1,0 +1,35 @@
+{
+  "name": "dom-objects",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepublish": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awinogradov/dom-objects.git"
+  },
+  "keywords": [
+    "test",
+    "dom",
+    "e2e",
+    "cypress",
+    "utils"
+  ],
+  "author": "Anton Vinogradov <winogradovaa@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/awinogradov/dom-objects/issues"
+  },
+  "homepage": "https://github.com/awinogradov/dom-objects#readme",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "devDependencies": {
+    "@types/node": "20.4.9",
+    "typescript": "^5.1.6"
+  }
+}
