@@ -17,9 +17,9 @@ export const configureDomObjects = ({ attributeName }: DomObjectsOptions) => {
                       [dataAttr]: queue[queue.length - 1],
                   };
         };
-        const query = () => queue.map((s) => `[${dataAttr}="${s}"]`).join(" ");
+        const query = (q: string[]) => q.map((s) => `[${dataAttr}="${s}"]`).join(" ");
         const add = (name: string) => {
-            queue.push(name);
+            const q = [...queue, name];
 
             return {
                 add,
@@ -27,7 +27,7 @@ export const configureDomObjects = ({ attributeName }: DomObjectsOptions) => {
                     return attrs();
                 },
                 get query() {
-                    return query();
+                    return query(q);
                 },
             };
         };
@@ -38,7 +38,7 @@ export const configureDomObjects = ({ attributeName }: DomObjectsOptions) => {
                 return attrs();
             },
             get query() {
-                return query();
+                return query(queue);
             },
         };
     };
