@@ -1,45 +1,46 @@
-interface DomObjectsOptions {
+type DataAttribute<T> =`data-${T extends string ? T : string}`;
+type DataAttributeQuery<T extends string, V, K extends string = DataAttribute<T>> = `[${K}="${V extends string ? V: string}"]`;
+
+interface DomObjectsOptions<T extends string> {
     /**
      * This attribute will be passed as [data-{attributeName}].
      * Ex: [data-cy], [data-test-id] and etc.
      */
-    attributeName: string;
+    attributeName: T;
 }
 
-export const configureDomObjects = ({ attributeName }: DomObjectsOptions) => {
-    return (name: string) => {
+interface DomObjectsResult<T extends string, V extends string> {
+    add<V1 extends string>(name: V1): DomObjectsResult<T, V1>;
+    attr?: {
+        [K in DataAttribute<T>]: V;
+    };
+    query: DataAttributeQuery<T, V>;
+}
+
+export const configureDomObjects = <T extends string>({ attributeName }: DomObjectsOptions<T>) => {
+    return <V extends string>(name: V) => {
         const dataAttr = `data-${attributeName}`;
         const queue: string[] = [name];
-        const attrs = () => {
-            return process.env.NODE_ENV === "production"
-                ? {}
-                : {
-                      [dataAttr]: queue[queue.length - 1],
-                  };
-        };
-        const query = (q: string[]) => q.map((s) => `[${dataAttr}="${s}"]`).join(" ");
-        const add = (name: string) => {
-            const q = [...queue, name];
 
-            return {
-                add,
-                get attr() {
-                    return attrs();
-                },
-                get query() {
-                    return query(q);
-                },
-            };
-        };
-
-        return {
-            add,
+        const getMethods = (currentQueue: string[]) => ({
             get attr() {
-                return attrs();
+                return process.env.NODE_ENV === "production"
+                    ? undefined
+                    : {
+                          [dataAttr]: currentQueue[currentQueue.length - 1],
+                      };
             },
+
             get query() {
-                return query(queue);
+                return currentQueue.map((s) => `[${dataAttr}="${s}"]`).join(" ");
             },
-        };
+            add(name: string) {
+                const nextQueue = currentQueue.concat(name);
+
+                return getMethods(nextQueue);
+            },
+        });
+
+        return getMethods(queue) as DomObjectsResult<T, V>;
     };
 };
