@@ -24,11 +24,9 @@ export const configureDomObjects = <T extends string>({ attributeName }: DomObje
 
         const getMethods = (currentQueue: string[]) => ({
             get attr() {
-                return process.env.NODE_ENV === "production"
-                    ? undefined
-                    : {
-                          [dataAttr]: currentQueue[currentQueue.length - 1],
-                      };
+                return {
+                    [dataAttr]: currentQueue[currentQueue.length - 1],
+                };
             },
 
             get query() {
