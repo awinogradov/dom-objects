@@ -1,5 +1,7 @@
-type DataAttribute<T> =`data-${T extends string ? T : string}`;
-type DataAttributeQuery<T extends string, V, K extends string = DataAttribute<T>> = `[${K}="${V extends string ? V: string}"]`;
+type DataAttribute<T> = `data-${T extends string ? T : string}`;
+type DataAttributeQuery<T extends string, V, K extends string = DataAttribute<T>> = `[${K}="${V extends string
+    ? V
+    : string}"]`;
 
 interface DomObjectsOptions<T extends string> {
     /**
@@ -10,35 +12,61 @@ interface DomObjectsOptions<T extends string> {
 }
 
 interface DomObjectsResult<T extends string, V extends string> {
-    add<V1 extends string>(name: V1): DomObjectsResult<T, V1>;
+    add<V1 extends string, V2 extends string>(name: V1, selector?: V2): DomObjectsResult<T, V1>;
     attr?: {
         [K in DataAttribute<T>]: V;
     };
     query: DataAttributeQuery<T, V>;
 }
 
+enum Type {
+    "main",
+    "child",
+}
+
+type Node = {
+    type: Type;
+    name: string;
+};
+
 export const configureDomObjects = <T extends string>({ attributeName }: DomObjectsOptions<T>) => {
     return <V extends string>(name: V) => {
         const dataAttr = `data-${attributeName}`;
-        const queue: string[] = [name];
+        const queue: Node[] = [
+            {
+                type: Type.main,
+                name,
+            },
+        ];
 
-        const getMethods = (currentQueue: string[]) => ({
+        const getMethods = (currentQueue: Node[], node: Node) => ({
             get attr() {
                 return {
-                    [dataAttr]: currentQueue[currentQueue.length - 1],
+                    [dataAttr]: node.name,
                 };
             },
 
             get query() {
-                return currentQueue.map((s) => `[${dataAttr}="${s}"]`).join(" ");
+                return currentQueue.map((s) => (s.type === Type.main ? `[${dataAttr}="${s.name}"]` : s.name)).join(" ");
             },
-            add(name: string) {
-                const nextQueue = currentQueue.concat(name);
+            add(name: string, select: string) {
+                const nextNode = {
+                    type: Type.main,
+                    name,
+                };
+                const nextQueue = currentQueue.concat(nextNode);
 
-                return getMethods(nextQueue);
+                if (select) {
+                    nextQueue.push({
+                        type: Type.child,
+                        name: select,
+                    });
+                }
+
+                return getMethods(nextQueue, nextNode);
             },
         });
 
-        return getMethods(queue) as DomObjectsResult<T, V>;
+        return getMethods(queue, queue[0]) as DomObjectsResult<T, V>;
     };
 };
